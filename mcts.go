@@ -23,7 +23,8 @@ func MonteCarloTreeSearch(state GameState, rolloutPolicy RolloutPolicy, simulati
 		result := leaf.rollout(rolloutPolicy)
 		leaf.backpropagate(result)
 	}
-	return root.uctBestChild(0.0).causingAction
+	return root.mostVisited().causingAction
+	// return root.uctBestChild(0.0).causingAction
 }
 
 func newMCTSNode(parentNode *monteCarloTreeSearchGameNode, state GameState, causingAction Action) monteCarloTreeSearchGameNode {
@@ -37,12 +38,24 @@ func rootMCTSNode(state GameState) monteCarloTreeSearchGameNode {
 	return newMCTSNode(nil, state, nil)
 }
 
+func (node *monteCarloTreeSearchGameNode) mostVisited() (chosen *monteCarloTreeSearchGameNode) {
+	maxValue := -math.MaxFloat64
+	chosen = nil
+	for _, child := range node.children {
+		if child.n > maxValue {
+			chosen = child
+		}
+	}
+	return
+}
+
 func (node *monteCarloTreeSearchGameNode) uctBestChild(c float64) *monteCarloTreeSearchGameNode {
 	chosenIndex := 0
 	maxValue := -math.MaxFloat64
 	for i, child := range node.children {
-		if (child.q/child.n)+c*math.Sqrt(2*math.Log(node.n)/child.n) > maxValue {
-			maxValue = (child.q / child.n) + c*math.Sqrt(2*math.Log(node.n)/child.n)
+		v := (child.q / child.n) + c*math.Sqrt(2*math.Log(node.n)/child.n)
+		if v > maxValue {
+			maxValue = v
 			chosenIndex = i
 		}
 	}
