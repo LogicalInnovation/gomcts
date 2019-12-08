@@ -14,4 +14,5 @@ type GameState interface {
 	GetLegalActions() []Action
 	IsGameEnded() bool
 	NextToMove() int8
+	RandomizeUnknowns()
 }
