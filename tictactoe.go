@@ -34,6 +34,22 @@ type TicTacToeGameState struct {
 	result       GameResult
 }
 
+func (s TicTacToeGameState) Clone() GameState {
+	state := CreateTicTacToeInitialGameState(uint8(len(s.board)))
+	for k, _ := range state.board {
+		copy(state.board[k], s.board[k])
+	}
+	state.nextToMove = s.nextToMove
+	state.emptySquares = s.emptySquares
+	state.ended = s.ended
+	state.result = s.result
+	return state
+}
+
+func (s TicTacToeGameState) RandomizeUnknowns() {
+
+}
+
 // CreateTicTacToeInitialGameState - initializes tic tac toe game state
 func CreateTicTacToeInitialGameState(boardSize uint8) TicTacToeGameState {
 	board := initialize2DInt8Slice(boardSize)

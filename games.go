@@ -15,5 +15,5 @@ type GameState interface {
 	IsGameEnded() bool
 	NextToMove() int8
 	RandomizeUnknowns()
-	Clone() *GameState
+	Clone() GameState
 }
