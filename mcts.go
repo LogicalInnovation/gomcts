@@ -50,7 +50,8 @@ func (node *monteCarloTreeSearchGameNode) uctBestChild(c float64) *monteCarloTre
 }
 
 func (node *monteCarloTreeSearchGameNode) rollout(policy RolloutPolicy) GameResult {
-	currentState := node.value
+	currentState := node.value.Clone()
+	currentState.RandomizeUnknowns()
 	for !currentState.IsGameEnded() {
 		currentState = policy(currentState).ApplyTo(currentState)
 	}
