@@ -2,6 +2,7 @@ package gomcts
 
 import (
 	"math"
+	"sync"
 )
 
 type monteCarloTreeSearchGameNode struct {
@@ -12,6 +13,7 @@ type monteCarloTreeSearchGameNode struct {
 	causingAction  Action
 	q              float64
 	n              float64
+	lock           sync.Mutex
 }
 
 // MonteCarloTreeSearch - function starting Monte Carlo Tree Search over provided GameState using RolloutPolicy of your choice, repeating simulation requested amount of time
@@ -20,11 +22,15 @@ func MonteCarloTreeSearch(state GameState, rolloutPolicy RolloutPolicy, simulati
 	var leaf *monteCarloTreeSearchGameNode
 	for i := 0; i < simulations; i++ {
 		leaf = root.treePolicy()
-		result := leaf.rollout(rolloutPolicy)
-		leaf.backpropagate(result)
+		go func() {
+			result := leaf.rollout(rolloutPolicy)
+			root.lock.Lock()
+			leaf.backpropagate(result)
+			root.lock.Unlock()
+		}()
 	}
-	return root.mostVisited().causingAction
-	// return root.uctBestChild(0.0).causingAction
+	// return root.mostVisited().causingAction
+	return root.uctBestChild(0.0).causingAction
 }
 
 func newMCTSNode(parentNode *monteCarloTreeSearchGameNode, state GameState, causingAction Action) monteCarloTreeSearchGameNode {
@@ -58,6 +64,9 @@ func (node *monteCarloTreeSearchGameNode) uctBestChild(c float64) *monteCarloTre
 			maxValue = v
 			chosenIndex = i
 		}
+		//if c == 0.0 {
+		//	log.Printf("Visits: %.0f Q-Value: %.3f\n", child.n, child.q)
+		//}
 	}
 	return node.children[chosenIndex]
 }
