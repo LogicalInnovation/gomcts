@@ -1,7 +1,9 @@
 package gomcts
 
 import (
+	"crypto/rand"
 	"math"
+	"math/big"
 	"sync"
 )
 
@@ -56,19 +58,30 @@ func (node *monteCarloTreeSearchGameNode) mostVisited() (chosen *monteCarloTreeS
 }
 
 func (node *monteCarloTreeSearchGameNode) uctBestChild(c float64) *monteCarloTreeSearchGameNode {
-	chosenIndex := 0
+	// chosenIndex := 0
 	maxValue := -math.MaxFloat64
-	for i, child := range node.children {
-		v := (child.q / child.n) + c*math.Sqrt(2*math.Log(node.n)/child.n)
+	bestChildren := []*monteCarloTreeSearchGameNode{}
+	for _, child := range node.children {
+		v := 100000000.0
+		if child.n > 0 {
+			v = (child.q / child.n) + c*math.Sqrt(2*math.Log(node.n)/child.n)
+		}
 		if v > maxValue {
 			maxValue = v
-			chosenIndex = i
+			// chosenIndex = i
+			bestChildren = nil
+			bestChildren = append(bestChildren, child)
+		} else if v == maxValue {
+			bestChildren = append(bestChildren, child)
 		}
 		//if c == 0.0 {
 		//	log.Printf("Visits: %.0f Q-Value: %.3f\n", child.n, child.q)
 		//}
 	}
-	return node.children[chosenIndex]
+	n := len(bestChildren)
+	index, _ := rand.Int(rand.Reader, big.NewInt(int64(n)))
+	return bestChildren[index.Int64()]
+	// return node.children[chosenIndex]
 }
 
 func (node *monteCarloTreeSearchGameNode) rollout(policy RolloutPolicy) GameResult {
